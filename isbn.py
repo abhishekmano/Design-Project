@@ -1,15 +1,21 @@
 import requests
-from bs4 import BeautifulSoup as bs
-import urllib2
-#a=raw_input("Enter the URL: ")
-webpage = urllib2.urlopen('https://isbnsearch.org/isbn/9780131593183')
-htmlcontent = bs(webpage, 'html.parser')
-value=[] #values present 
-tag = [] #what is the value 
-products = htmlcontent.find('div')
-print (products)
-#for row in products.find_all('tr'):
-#        for cells in row.find_all('td',{'class':'metadata_value'}):
-#            prices.append(cells.text)
-#        for cells in row.find_all('td',{'class':'metadata_label'}):
-#            details.append(cells.text)
+from bs4 import BeautifulSoup
+import json
+
+#a= input ("Enter ISBN")
+url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + str(9780131593183)
+
+r = requests.get(url)
+Data = r.content
+parseData = json.loads(Data) 
+Details = parseData["items"][0]["volumeInfo"]
+Title = Details["title"]
+publisher =Details["publisher"]
+Date = Details["publishedDate"]
+page = Details["pageCount"]
+ISBN13 = Details["industryIdentifiers"][0]["identifier"]
+Link = Details["infoLink"]
+author = Details["authors"][0]
+print ("Name of the Book is "+ Title)
+print (publisher)
+print ("Date of release " + Date)
