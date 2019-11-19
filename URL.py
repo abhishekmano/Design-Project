@@ -45,30 +45,6 @@ part =name.split(",")
 name = part[0]
 print "ISBN: ",isbn,"name : ",name,"publisher: ",publisher ,"year: ",year,"pages: ",pages
 
-#for i in range(n):
-#        print details[i]," : ",prices[i]    
-'''
-name = prices[0]
-isbn =prices[4]
-part = isbn.split(",")
-isbn =part[1]
-isbn =isbn.strip()
-publisher =prices[3]
-part = publisher.split(",")
-publisher = part[0]
-year = part[1]
-pages = prices[5]
-part=pages.split()
-pages = part[0]
-year =year.strip()
-print "ISBN",isbn,"name",name,"publisher",publisher,"year",year,"pages",pages
-name = name[:50]
-#print prices
-#print details
-'''
-#df = pd.DataFrame({'Product Name':products,'Price':prices,'Rating':ratings}) 
-#df.to_csv('products.csv', index=False, encoding='utf-8')
-
 #'''
 try:
         connection = mysql.connector.connect(host='localhost',

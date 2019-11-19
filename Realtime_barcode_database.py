@@ -1,7 +1,6 @@
-# import the necessary packages
-from pyzbar import pyzbar
-import argparse
+from pyzbar.pyzbar import decode
 import cv2
+import numpy as np
 
 import requests
 from bs4 import BeautifulSoup as bs
@@ -9,45 +8,45 @@ import json
 
 import mysql.connector
 from mysql.connector import Error
- 
-# construct the argument parser and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image", required=True,
-	help="path to input image")
-args = vars(ap.parse_args())
 
-# load the input image
-image = cv2.imread(args["image"])
- 
-# find the barcodes in the image and decode each of the barcodes
-barcodes = pyzbar.decode(image)
+flag=0
 
-# loop over the detected barcodes
-for barcode in barcodes:
-	# extract the bounding box location of the barcode and draw the
-	# bounding box surrounding the barcode on the image
-	(x, y, w, h) = barcode.rect
-	cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
- 
-	# the barcode data is a bytes object so if we want to draw it on
-	# our output image we need to convert it to a string first
-	barcodeData = barcode.data.decode("utf-8")
-	barcodeType = barcode.type
- 
-	# draw the barcode data and barcode type on the image
-	text = "{} ({})".format(barcodeData, barcodeType)
-	cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX,
-		0.5, (0, 0, 255), 2)
- 
-	# print the barcode type and data to the terminal
-	#print("[INFO] Found {} barcode: {}".format(barcodeType, barcodeData))
+def barcodeReader(image, bgr):
+    gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    barcodes = decode(gray_img)
 
-print ("ISBN is "+ barcodeData)
-# show the output image
-#cv2.imshow("Image", image)
-#cv2.waitKey(0)
+    for decodedObject in barcodes:
+        points = decodedObject.polygon
 
-url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + str(barcodeData)
+        pts = np.array(points, np.int32)
+        pts = pts.reshape((-1, 1, 2))
+        cv2.polylines(image, [pts], True, (0, 255, 0), 3)
+
+    for bc in barcodes:
+        cv2.putText(frame, bc.data.decode("utf-8") + " - " + bc.type, (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                    bgr, 2)
+        flag=1
+        #print (bc.data)
+        return bc.data,flag
+    return '',0
+
+
+bgr = (8, 70, 208)
+
+cap = cv2.VideoCapture(0)
+while (True):
+    ret, frame = cap.read()
+    data,flag = barcodeReader(frame, bgr)
+    #print(barcode)
+    if(flag==1):
+        print(data)
+        break
+    cv2.imshow('Barcode reader', frame)
+    code = cv2.waitKey(10)
+    if code == ord('q'):
+        break
+
+url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + str(data)
 
 r = requests.get(url)
 Data = r.content
